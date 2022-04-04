@@ -1,0 +1,3 @@
+.catch
+node_modules
+config.env
