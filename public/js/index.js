@@ -2,10 +2,14 @@ import '@babel/polyfill';
 
 import { register } from './register';
 import { signin, signout } from './signin';
+import { post } from './post';
+import { likeUnlikePost } from './postFeature';
 
-const registerForm = document.querySelector('#registerForm');
-const signinForm = document.querySelector('#signinForm');
-const signoutBtn = document.querySelector('#signout');
+const registerForm = document.getElementById('registerForm');
+const signinForm = document.getElementById('signinForm');
+const signoutBtn = document.getElementById('signout');
+const postBtn = document.getElementById('submitPostButton');
+const postLikeBtns = document.querySelectorAll('#likeButton');
 
 if (registerForm)
   registerForm.addEventListener('submit', (e) => {
@@ -35,3 +39,36 @@ if (signoutBtn)
     e.preventDefault();
     signout();
   });
+
+if (postBtn)
+  postBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const content = document.getElementById('postTextarea').value;
+    const userId = document.querySelector('.post').dataset.user;
+
+    post(content, userId);
+  });
+
+postLikeBtns.forEach((postLikeBtn) => {
+  if (postLikeBtn)
+    postLikeBtn.addEventListener('click', (e) => {
+      const postId = e.target.closest('.post').dataset.postid;
+      const userId = e.target.closest('.post').dataset.user;
+      const likes = e.target.children[1];
+
+      if (!postId || !userId) return;
+
+      likeUnlikePost(postId, userId);
+
+      likeUnlikePost(postId, userId).then((data) => {
+        likes.textContent = data.data.data.likes.length || '';
+
+        if (data.data.data.likes.some((like) => like.id === userId)) {
+          postLikeBtn.classList.add('active');
+        } else {
+          postLikeBtn.classList.remove('active');
+        }
+      });
+    });
+});
