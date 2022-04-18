@@ -7,7 +7,63 @@ mixin createPostForm()
     .textareaContainer
       textarea#postTextarea(placeholder="What's happening?")
       .buttonsContainer
-        button#submitPostButton(disabled="") Post
+        button#submitPostButton() Post
 
-block content    
+mixin createReplyModal()
+  #replyModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='replyModalLabel', aria-hidden='true')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5#replyModalLabel.modal-title Reply
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') &times;
+        .modal-body
+          form.postFormContainer
+            .userImageContainer
+              img(src="./img/profilePic.jpeg" alt="User's profile picture")
+            .textareaContainer
+              textarea#postTextarea(placeholder="What's happening?")
+        .modal-footer
+          button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+          button#submitReplyButton.btn.btn-primary(type='button') Reply
+
+block content     
   +createPostForm()
+  +createReplyModal()
+  .postsContainer
+    each post in posts
+      .post(data-postid=`${post.id}` data-user=`${user.id}`)
+        - const isRetweet = post.retweetData;
+        - if(isRetweet)
+          .postActionContainer
+            i.fas.fa-retweet
+            span  Retweeted by 
+            a(href=`/profile/${post.postBy.username}`)= `@${post.postBy.username}`
+
+        .mainContentContainer
+          .userImageContainer
+            img(src=`/img/${post.postBy.profilePhoto}`, alt=`${post.postBy.username}`)
+          .postContentContainer
+            .header 
+              -const name = post.postBy.firstName + " " + post.postBy.lastName
+              a.displayName(href=`/profile/${post.postBy.username}`) #{name}
+              span.username= `@${post.postBy.username}`
+              span.date= timeDifference(new Date(),new Date(post.createdAt))
+            .postBody
+              -const content = post.retweetData?post.retweetData.content:post.content
+              span= content
+            .postFooter
+              .postButtonContainer
+                button(data-toggle='modal' data-target='#replyModal')
+                  i.far.fa-comment
+              .postButtonContainer.green
+                -const retweetActive=post.retweetData?post.retweetData.retweetUsers.includes(user.id) :'';
+                button.retweetButton#retweetButton(class=`${retweetActive?'active':''}`)
+                  i.fas.fa-retweet
+                  span#likes= `${post.retweetData ? post.retweetData.retweetUsers.length : ''}`
+              .postButtonContainer.red
+                - const likeActive = post.likes.some(like => like.id === user.id);
+                button.likeButton#likeButton(class=`${likeActive?'active':''}` )
+                  i.far.fa-heart
+                  span#likes= `${post.likes.length ||''}`
+
