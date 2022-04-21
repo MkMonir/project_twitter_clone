@@ -1,15 +1,16 @@
-const path = require('path');
 const http = require('http');
 const dotenv = require('dotenv');
-const express = require('express');
 const socketio = require('socket.io');
+const Database = require('./utils/database');
 
-const app = express();
+const app = require('./app');
 const server = http.createServer(app);
 const io = socketio(server);
 
 dotenv.config({ path: './config.env' });
-app.use(express.static(path.join(__dirname, 'public')));
+
+// DATABASE CONNECTION
+const mongodbConnection = new Database();
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server successfully running on port ${PORT}`));
